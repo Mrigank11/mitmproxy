@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import re
 import contextlib
 import os
@@ -144,13 +145,15 @@ def build_wheel():
         "--dist-dir", DIST_DIR,
     ])
 
+    whl = glob.glob(join(DIST_DIR, 'mitmproxy-*-py3-none-any.whl'))[0]
+    print("Found wheel package: {}".format(whl))
+
     subprocess.check_call([
         "tox",
-        "-e", "wheeltest"
-    ], env={
-        **os.environ,
-        "VERSION": VERSION,
-    })
+        "-e", "wheeltest",
+        "--",
+        whl
+    ])
 
 
 def build_pyinstaller():

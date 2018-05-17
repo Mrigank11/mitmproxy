@@ -248,10 +248,14 @@ def upload():
             "s3://snapshots.mitmproxy.org/%s/" % UPLOAD_DIR,
             "--recursive",
         ])
-    else:
-        print("ERROR: No credentials for AWS found!")
 
-    if "TWINE_USERNAME" in os.environ and "TWINE_PASSWORD" in os.environ
+    upload_pypi = (
+        TAG and
+        "WHEEL" in os.environ and
+        "TWINE_USERNAME" in os.environ and
+        "TWINE_PASSWORD" in os.environ
+    )
+    if upload_pypi:
         filename = wheel_name()
         print("Uploading {} to PyPi...".format(filename))
         subprocess.check_call([
@@ -259,8 +263,6 @@ def upload():
             "upload",
             join(DIST_DIR, filename)
         ])
-    else:
-        print("ERROR: No credentials for PyPi upload with twine found!")
 
 
 @cli.command("decrypt")

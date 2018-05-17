@@ -144,6 +144,14 @@ def build_wheel():
         "--dist-dir", DIST_DIR,
     ])
 
+    subprocess.check_call([
+        "tox",
+        "-e", "wheeltest"
+    ], env={
+        **os.environ,
+        "VERSION": VERSION,
+    })
+
 
 def build_pyinstaller():
     if exists(PYINSTALLER_TEMP):

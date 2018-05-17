@@ -72,7 +72,7 @@ script:
     if [[ $BDIST == "1" ]]
     then
         git fetch --unshallow --tags
-        tox -e cibuild -- build && tox -e wheeltest
+        tox -e cibuild -- build
     fi
 
 after_success:

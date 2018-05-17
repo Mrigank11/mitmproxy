@@ -229,7 +229,8 @@ def is_pr():
 @cli.command("upload")
 def upload():
     """
-        Upload snapshot to snapshot server
+        Upload build artifacts to snapshot server and
+        upload wheel package to PyPi
     """
     # This requires some explanation. The AWS access keys are only exposed to
     # privileged builds - that is, they are not available to PRs from forks.
@@ -238,16 +239,28 @@ def upload():
     if is_pr():
         print("Refusing to upload a pull request")
         return
+
     if "AWS_ACCESS_KEY_ID" in os.environ:
-        subprocess.check_call(
-            [
-                "aws", "s3", "cp",
-                "--acl", "public-read",
-                DIST_DIR + "/",
-                "s3://snapshots.mitmproxy.org/%s/" % UPLOAD_DIR,
-                "--recursive",
-            ]
-        )
+        subprocess.check_call([
+            "aws", "s3", "cp",
+            "--acl", "public-read",
+            DIST_DIR + "/",
+            "s3://snapshots.mitmproxy.org/%s/" % UPLOAD_DIR,
+            "--recursive",
+        ])
+    else:
+        print("ERROR: No credentials for AWS found!")
+
+    if "TWINE_USERNAME" in os.environ and "TWINE_PASSWORD" in os.environ
+        filename = wheel_name()
+        print("Uploading {} to PyPi...".format(filename))
+        subprocess.check_call([
+            "twine",
+            "upload",
+            join(DIST_DIR, filename)
+        ])
+    else:
+        print("ERROR: No credentials for PyPi upload with twine found!")
 
 
 @cli.command("decrypt")

@@ -119,7 +119,7 @@ def cli():
 
 @cli.command("info")
 def info():
-    print("Version: %s" % VERSION)
+    click.echo("Version: %s" % VERSION)
 
 
 @cli.command("build")
@@ -131,12 +131,12 @@ def build():
     if "WHEEL" in os.environ:
         build_wheel()
     else:
-        print("Not building wheels.")
+        click.echo("Not building wheels.")
     build_pyinstaller()
 
 
 def build_wheel():
-    print("Building wheel...")
+    click.echo("Building wheel...")
     subprocess.check_call([
         "python",
         "setup.py",
@@ -146,7 +146,7 @@ def build_wheel():
     ])
 
     whl = glob.glob(join(DIST_DIR, 'mitmproxy-*-py3-none-any.whl'))[0]
-    print("Found wheel package: {}".format(whl))
+    click.echo("Found wheel package: {}".format(whl))
 
     subprocess.check_call([
         "tox",
@@ -171,7 +171,7 @@ def build_pyinstaller():
                 # This is PyInstaller, so it messes up paths.
                 # We need to make sure that we are in the spec folder.
                 with chdir(PYINSTALLER_SPEC):
-                    print("Building %s binary..." % tool)
+                    click.echo("Building %s binary..." % tool)
                     excludes = []
                     if tool != "mitmweb":
                         excludes.append("mitmproxy.tools.web")
@@ -212,11 +212,11 @@ def build_pyinstaller():
                     )
                     executable = executable.replace("_main", "")
 
-                print("> %s --version" % executable)
-                print(subprocess.check_output([executable, "--version"]).decode())
+                click.echo("> %s --version" % executable)
+                click.echo(subprocess.check_output([executable, "--version"]).decode())
 
                 archive.add(executable, basename(executable))
-        print("Packed {}.".format(archive_name(bdist)))
+        click.echo("Packed {}.".format(archive_name(bdist)))
 
 
 def is_pr():
@@ -240,7 +240,7 @@ def upload():
     # However, they ARE exposed to PRs from a branch within the main repo. This
     # check catches that corner case, and prevents an inadvertent upload.
     if is_pr():
-        print("Refusing to upload a pull request")
+        click.echo("Refusing to upload a pull request")
         return
 
     if "AWS_ACCESS_KEY_ID" in os.environ:
@@ -260,7 +260,7 @@ def upload():
     )
     if upload_pypi:
         filename = "mitmproxy-{version}-py3-none-any.whl".format(version=VERSION)
-        print("Uploading {} to PyPi...".format(filename))
+        click.echo("Uploading {} to PyPi...".format(filename))
         subprocess.check_call([
             "twine",
             "upload",

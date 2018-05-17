@@ -151,13 +151,12 @@ def build():
 
     if "WHEEL" in os.environ:
         print("Building wheel...")
-        subprocess.check_call(
-            [
-                "python",
-                "setup.py", "-q", "bdist_wheel",
-                "--dist-dir", "release/dist",
-            ]
-        )
+        subprocess.check_call([
+            "python",
+            "setup.py",
+            "-q", "bdist_wheel",
+            "--dist-dir", "release/dist",
+        ])
 
     for bdist, tools in sorted(BDISTS.items()):
         with Archive(join(DIST_DIR, archive_name(bdist))) as archive:

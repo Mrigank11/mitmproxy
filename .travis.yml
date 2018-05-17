@@ -79,7 +79,7 @@ after_success:
   - |
     if [[ $BDIST == "1" ]]
     then
-        tox -e cibuild -- upload
+        tox -e wheeltest && tox -e cibuild -- upload
     fi
 
 notifications:

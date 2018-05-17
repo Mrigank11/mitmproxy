@@ -129,6 +129,8 @@ def build():
     os.makedirs(DIST_DIR, exist_ok=True)
     if "WHEEL" in os.environ:
         build_wheel()
+    else:
+        print("Not building wheels.")
     build_pyinstaller()
 
 

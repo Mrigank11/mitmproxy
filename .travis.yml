@@ -72,14 +72,14 @@ script:
     if [[ $BDIST == "1" ]]
     then
         git fetch --unshallow --tags
-        tox -e cibuild -- build
+        tox -e cibuild -- build && tox -e wheeltest
     fi
 
 after_success:
   - |
     if [[ $BDIST == "1" ]]
     then
-        tox -e wheeltest && tox -e cibuild -- upload
+        tox -e cibuild -- upload
     fi
 
 notifications:

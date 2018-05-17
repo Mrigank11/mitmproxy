@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import contextlib
 import os
 import platform
@@ -73,17 +74,17 @@ TOOLS = [
 TAG = os.environ.get("TRAVIS_TAG", os.environ.get("APPVEYOR_REPO_TAG_NAME", None))
 BRANCH = os.environ.get("TRAVIS_BRANCH", os.environ.get("APPVEYOR_REPO_BRANCH", None))
 if TAG:
-    VERSION = TAG
+    VERSION = re.sub('^v', '', TAG)
     UPLOAD_DIR = VERSION
 elif BRANCH:
-    VERSION = BRANCH
+    VERSION = re.sub('^v', '', BRANCH)
     UPLOAD_DIR = "branches/%s" % VERSION
 else:
     print("Could not establish build name - exiting." % BRANCH)
     sys.exit(0)
 
-
 print("BUILD VERSION=%s" % VERSION)
+print("BUILD UPLOAD_DIR=%s" % UPLOAD_DIR)
 
 
 def archive_name(bdist: str) -> str:
@@ -96,23 +97,6 @@ def archive_name(bdist: str) -> str:
         version=VERSION,
         platform=PLATFORM_TAG,
         ext=ext
-    )
-
-
-def wheel_name() -> str:
-    return "mitmproxy-{version}-py3-none-any.whl".format(version=VERSION)
-
-
-def installer_name() -> str:
-    ext = {
-        "Windows": "exe",
-        "Darwin": "dmg",
-        "Linux": "run"
-    }[platform.system()]
-    return "mitmproxy-{version}-{platform}-installer.{ext}".format(
-        version=VERSION,
-        platform=PLATFORM_TAG,
-        ext=ext,
     )
 
 
@@ -142,21 +126,28 @@ def build():
     """
     Build a binary distribution
     """
+    os.makedirs(DIST_DIR, exist_ok=True)
+    if "WHEEL" in os.environ:
+        build_wheel()
+    build_pyinstaller()
+
+
+def build_wheel():
+    print("Building wheel...")
+    subprocess.check_call([
+        "python",
+        "setup.py",
+        "-q",
+        "bdist_wheel",
+        "--dist-dir", DIST_DIR,
+    ])
+
+
+def build_pyinstaller():
     if exists(PYINSTALLER_TEMP):
         shutil.rmtree(PYINSTALLER_TEMP)
     if exists(PYINSTALLER_DIST):
         shutil.rmtree(PYINSTALLER_DIST)
-
-    os.makedirs(DIST_DIR, exist_ok=True)
-
-    if "WHEEL" in os.environ:
-        print("Building wheel...")
-        subprocess.check_call([
-            "python",
-            "setup.py",
-            "-q", "bdist_wheel",
-            "--dist-dir", "release/dist",
-        ])
 
     for bdist, tools in sorted(BDISTS.items()):
         with Archive(join(DIST_DIR, archive_name(bdist))) as archive:
@@ -255,7 +246,7 @@ def upload():
         "TWINE_PASSWORD" in os.environ
     )
     if upload_pypi:
-        filename = wheel_name()
+        filename = "mitmproxy-{version}-py3-none-any.whl".format(version=VERSION)
         print("Uploading {} to PyPi...".format(filename))
         subprocess.check_call([
             "twine",

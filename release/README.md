@@ -6,7 +6,7 @@ release for! The command examples assume that you have a git remote called
 
 - Verify that `mitmproxy/version.py` is correct
 - Update CHANGELOG
-- Update CONTRIBUTORS
+- Update CONTRIBUTORS: `git shortlog -n -s > CONTRIBUTORS`
 - Verify that all CI tests pass
 - Create a major version branch - e.g. `v4.x`. Assuming you have a remote repo called `upstream` that points to the mitmproxy/mitmproxy repo::
   - `git checkout -b v4.x upstream/master`
